@@ -1,146 +1,237 @@
 
 <html>
-<!-- 开发环境版本，包含了有帮助的命令行警告 -->
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<!-- 官网提供的axios在线地址 -->
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<head>
-    <style>
-        .body{
-            border: 1px solid #ccc;
-            width:600px;
-            height: 400px;
-            display: flex;
-            flex-direction: column;
-        }
-        .body div:nth-child(2){
-            flex-grow: 1;
-        }
-        .body_d{
-            border:1px solid #ccc;
-            height: 40px;
-        }
-        .top{
-            display: flex;
-            
-        }
-        .top div{
-            line-height:40px;
-        }
-        .middle{
-            display: flex;
-            flex-direction: row;
-            
-        }
-        .middle div{
-            border:1px solid #ccc;
-            width: 150px;
-        }
-        .middle div:nth-child(2){
-            flex-grow: 1;
-        }
-        .music{
-            overflow:auto;
-        }
-        .music ul{
-            list-style: none;
-            padding: 0px;
-        }
-        .music li{
-            border-bottom: 1px solid #ccc;
-            cursor: pointer;
-        }
-        .play{
-            width: 22px;
-            height: 22px;
-        }
-        .playing{
-            color:red;
-        }
-    </style>
-<body>
-    <div class="body">
-        <div class="body_d top">
-            <div>悦听</div>
-            <div>
-                <input type="text" style="width:200px;" placeholder="搜索歌曲" v-model="query" @keyup.enter="searchMusic"/>
+    <!-- 开发环境版本，包含了有帮助的命令行警告 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- 官网提供的axios在线地址 -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <head>
+        <style>
+            .body{
+                border: 1px solid #ccc;
+                width:600px;
+                height: 400px;
+                display: flex;
+                flex-direction: column;
+                margin: auto;
+            }
+            .body div:nth-child(2){
+                flex-grow: 1;
+            }
+            .body_d{
+                border:1px solid #ccc;
+                height: 40px;
+            }
+            .top{
+                display: flex;
+                
+            }
+            .top div{
+                line-height:40px;
+            }
+            .middle{
+                display: flex;
+                flex-direction: row;
+                
+            }
+            .middle div{
+                border:1px solid #ccc;
+                width: 150px;
+            }
+            .middle div:nth-child(2){
+                flex-grow: 1;
+            }
+            .music,.comment{
+                overflow:auto;
+            }
+            .music ul{
+                list-style: none;
+                padding: 0px;
+            }
+            .music li{
+                border-bottom: 1px solid #ccc;
+                cursor: pointer;
+            }
+            .play{
+                width: 22px;
+                height: 22px;
+            }
+            .playing{
+                color:red;
+            }
+            .bottom audio{
+                width: 100%;
+                height: 100%;
+            }
+            .image{
+                padding: 50px;
+            }
+            .image img{
+                width: 200px;
+                height: 200px;
+                border-radius: 100px;
+                border: 1px solid black ;
+                box-shadow: 0px 0px 100px black;
+            }
+            .comment img{
+                width:35px;
+                height: 35px;
+                border: 1px solid #00000000;
+                border-radius: 20px;
+            }
+            .comment>dl>dd:nth-child(2){
+                margin-top:-30px;
+                font-size: 12px;
+            }
+            .comment>dl>dd:nth-child(3){
+                margin-top:10px;
+            }
+            @-webkit-keyframes rotation{
+               from {-webkit-transform: rotate(0deg);}
+              to {-webkit-transform: rotate(360deg);}
+            }
+            .playStatus{
+                /* -webkit-transform: rotate(360deg); */
+                animation: rotation 8s linear infinite;
+                /* -moz-animation: rotation 3s linear infinite;
+                -webkit-animation: rotation 3s linear infinite;
+                -o-animation: rotation 3s linear infinite; */
+            }
+        </style>
+    <body>
+        <div class="body">
+            <div class="body_d top">
+                <div>悦听</div>
+                <div>
+                    <input type="text" style="width:200px;float: right;margin-top: 10px;" 
+                    placeholder="搜索歌曲" v-model="query" @keyup.enter="searchMusic"/>
+                </div>
+            </div>
+            <div class="body_d middle">
+                <div class="music">
+                    <ul>
+                        <li v-for="(music,index) in musicList" @click="playMusic(music.id,index)">
+                            <span class="play" :class="{playing:playIndex == index}">★</span>
+                            {{index+1}}.{{music.name}}
+                        </li>
+                    </ul>
+                </div>
+                <div class="image" :class="{playStatus:isPlaying}" >
+                        <img class="music_img" v-show="img_show" :src="picSrc">
+                    
+                </div>
+                <div class="comment">
+                    <dl v-for="(comment,index) in hotComments">
+                        <dt><img :src="comment.user.avatarUrl"></dt>
+                        <dd>{{comment.user.nickname}}</dd>
+                        <dd>{{comment.content}}</dd>
+                     </dl>
+                </div>
+            </div>
+            <div class="body_d bottom">
+                <audio :src="musicSrc" @play="play" @pause="pause" autoplay controls loop></audio>
             </div>
         </div>
-        <div class="body_d middle">
-            <div class="music">
-                <ul>
-                    <li v-for="(music,index) in musicList" @click="playMusic(music.id,index)">
-                        <span class="play" :class="{playing:playIndex == index}">★</span>
-                        {{index+1}}.{{music.name}}
-                    </li>
-                </ul>
-            </div>
-            <div class="image">图片</div>
-            <div class="comment">评论</div>
-        </div>
-        <div class="body_d bottom">
-            <audio :src="musicSrc"></audio>
-        </div>
-    </div>
-</body>
-<script>
-    var app = new Vue({
-        el: ".body",
-        data:{
-            query:"",
-            musicList:[],
-            playStatus: false,
-            playIndex: null,
-            musicSrc: null
-        },
-        methods:{
-            searchMusic: function(){
-                /**
-                歌曲搜索接口
-                请求地址：https://autumnfish.cn/search
-                请求方法: get
-                请求参数：keywords(查询关键字)
-                响应内容：歌曲列表
-                **/
-                if(this.query != ""){
+    </body>
+    <script>
+        var app = new Vue({
+            el: ".body",
+            data:{
+                img_show: false,
+                query:"",
+                musicList:[],
+                playIndex: null,
+                musicSrc: null,
+                picSrc: null,
+                hotComments:[],
+                isPlaying: false
+            },
+            methods:{
+                searchMusic: function(){
+                    //
+                    this.playIndex = null;
+                    /**
+                    歌曲搜索接口
+                    请求地址：https://autumnfish.cn/search
+                    请求方法: get
+                    请求参数：keywords(查询关键字)
+                    响应内容：歌曲列表
+                    **/
+                    if(this.query != ""){
+                        var that = this;
+                        axios.get("https://autumnfish.cn/search?keywords="+that.query).then(
+                        function(response){
+                            var songs = response.data.result.songs;
+                            console.log(songs[0])
+                            that.musicList = songs;
+                            // for(var o in songs){
+                            //     that.musicList.push(songs[o].name)
+                            // }
+                            
+                        },function(err){
+    
+                        })
+                    }else{
+                        alert("请输入查询歌曲")
+                    }
+                },
+                playMusic: function(id,index){
+                    if(!this.img_show){
+                        this.img_show = !this.img_show;
+                    }
+                    
+                    this.playIndex = index;
+                    /**
+                    歌曲url获取接口
+                    请求地址：https://autumnfish.cn/song/url
+                    请求方法: get
+                    请求参数：id(歌曲id)
+                    响应内容：歌曲url地址
+                    **/
                     var that = this;
-                    axios.get("https://autumnfish.cn/search?keywords="+that.query).then(
-                    function(response){
-                        var songs = response.data.result.songs;
-                        that.musicList = songs;
-                        // for(var o in songs){
-                        //     that.musicList.push(songs[o].name)
-                        // }
-                        
+                    axios.get("https://autumnfish.cn/song/url?id="+ id)
+                    .then(function(response){
+                        that.musicSrc = response.data.data[0].url;
+                    },function(err){
+    
+                    });
+                    /**
+                    歌曲详情获取接口
+                    请求地址：https://autumnfish.cn/song/detail
+                    请求方法: get
+                    请求参数：ids(歌曲id)
+                    响应内容：歌曲url地址
+                    **/
+                    axios.get("https://autumnfish.cn/song/detail?ids=" + id)
+                    .then(function(response){
+                        console.log(response)
+                        that.picSrc = response.data.songs[0].al.picUrl;
+                        console.log(that.picSrc)
+                    },function(err){
+
+                    });
+                    /**
+                    歌曲详情获取接口
+                    请求地址：https://autumnfish.cn/comment/hot?type=0
+                    请求方法: get
+                    请求参数：id(歌曲id，type固定为0)
+                    响应内容：歌曲url地址
+                    **/
+                    axios.get("https://autumnfish.cn/comment/hot?type=0&id="+ id)
+                    .then(function(response){
+                        console.log(response)
+                        that.hotComments = response.data.hotComments;
                     },function(err){
 
                     })
-                }else{
-                    alert("请输入查询歌曲")
+                },
+                play: function(){
+                    this.isPlaying = true;
+                },
+                pause: function(){
+                    this.isPlaying = false;
                 }
-            },
-            playMusic: function(id,index){
-                this.playIndex = index;
-                /**
-                歌曲url获取接口
-                请求地址：https://autumnfish.cn/song/url
-                请求方法: get
-                请求参数：id(查询关键字)w
-                响应内容：歌曲url地址
-                **/
-                console.log(index)
-                console.log(id)
-                var that = this;
-                axios.get("https://autumnfish.cn/song/url?id="+ id)
-                .then(function(response){
-                    console.log(response.data.data[0])
-                    that.musicSrc = response.data.data[0].url;
-                },function(err){
-
-                })
             }
-        }
-    })
-</script>
-</head>
-</html>
+        })
+    </script>
+    </head>
+    </html>
