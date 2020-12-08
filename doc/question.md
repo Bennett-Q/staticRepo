@@ -433,14 +433,11 @@ server {
 
 #### jdk代理和cglib代理的区别
 
-|   区别   |                         jdk动态代理                          |           CGLIB动态代理（Code Generation Library）           |
+|   区别   |                         jdk动态代理                          |                        CGLIB动态代理                         |
 | :------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
 | 使用场景 |     当被代理对象,实现了至少一个接口时会使用JDK动态代理.      |      当被代理对象没有实现任何接口时,spring会使用CGLIB.       |
 | 使用方法 | 1.定义一个java.lang.reflect.InvocationHandler接口的实现类，重写invoke方法<br />2.将InvocationHandler对象作为参数传入java.lang.reflect.Proxy的newProxyInstance方法中<br />3.通过调用java.lang.reflect.Proxy的newProxyInstance方法获得动态代理对象<br />4.通过代理对象调用目标方法 | 1.定义一个org.springframework.cglib.proxy.MethodInterceptor接口的实现类，重写intercept方法<br/>2.获取org.springframework.cglib.proxy.Enhancer类的对象<br/>3.分别调用Enhancer对象的setSuperclass和setCallback方法，使用create方法获取代理对象<br/>4.通过代理对象调用目标方法 |
 | 实现原理 |        通过java反射机制，只能对实现了接口的类生成代理        |      底层是依赖于ASM(开源的Java字节码编辑库,操作字节码)      |
-|   优劣   | 1.JDK动态代理创建对象时间更短<br />2.所创建对象性能没有cglib高 | 1.final修饰的方法无法被覆盖. <br />2.要将CGLIB的二进制发行包放在classpath下<br />3.CgLib动态代理基于继承来实现代理，所以无法对final类、private方法和static方法实现代理<br />4.CGLib在创建对象的时候所花费的时间却比JDK动态代理要多很多，有研究表明，大概有8倍的差距 |
-|          |                                                              |                                                              |
-
-注： 在1.6和1.7的时候，JDK动态代理的速度要比CGLib动态代理的速度要慢，但是并没有教科书上的10倍差距，在JDK1.8的时候，JDK动态代理的速度已经比CGLib动态代理的速度快很多了 ，好像是因为1.8中jdk也开始对字节码进行操作了。
+|   优劣   |                                                              |                                                              |
 
 #### SpringCloud中的异步调用
